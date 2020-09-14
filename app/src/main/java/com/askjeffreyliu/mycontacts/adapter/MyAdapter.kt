@@ -38,7 +38,7 @@ class MyAdapter(private val listener: (MyContact) -> Unit) :
     inner class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bind(item: MyContact, listener: (MyContact) -> Unit) = with(itemView) {
             nameTextView.text = item.name
-            phoneTextView.text = item.phone
+//            phoneTextView.text = item.phone
             if (item.star) {
                 starView.visibility = View.VISIBLE
             } else {

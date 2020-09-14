@@ -13,17 +13,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.askjeffreyliu.mycontacts.R
 import com.askjeffreyliu.mycontacts.adapter.MyAdapter
-import com.orhanobut.logger.Logger
 import kotlinx.android.synthetic.main.main_fragment.*
 
 class MainFragment : Fragment() {
 
     companion object {
-        fun newInstance() = MainFragment()
         private const val PERMISSIONS_REQUEST_CODE = 123
         private val PERMISSIONS = arrayOf(Manifest.permission.READ_CONTACTS)
     }
@@ -66,7 +65,14 @@ class MainFragment : Fragment() {
     private fun initList() {
         viewManager = LinearLayoutManager(requireContext())
         mAdapter = MyAdapter {
-            Logger.d(it.name)
+            val directions = MainFragmentDirections.navigateSeeDetail(
+                it.id,
+                it.name,
+//                it.phone,
+                it.photo,
+                it.star
+            )
+            findNavController().navigate(directions)
         }
         viewAdapter = mAdapter
 
