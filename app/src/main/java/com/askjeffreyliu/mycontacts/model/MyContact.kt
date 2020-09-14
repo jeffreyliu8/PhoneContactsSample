@@ -6,5 +6,6 @@ data class MyContact(
     val name: String?,
     val phone: String?,
 //    val email: String?,
-    val photo: String?
+    val photo: String?,
+    val star: Boolean
 )

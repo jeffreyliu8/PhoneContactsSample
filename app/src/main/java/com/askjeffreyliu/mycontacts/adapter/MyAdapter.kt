@@ -39,12 +39,16 @@ class MyAdapter(private val listener: (MyContact) -> Unit) :
         fun bind(item: MyContact, listener: (MyContact) -> Unit) = with(itemView) {
             nameTextView.text = item.name
             phoneTextView.text = item.phone
+            if (item.star) {
+                starView.visibility = View.VISIBLE
+            } else {
+                starView.visibility = View.GONE
+            }
 //            emailTextView.text = item.email
 
             val options = RequestOptions()
                 .centerCrop()
-                .placeholder(R.drawable.ic_launcher_background)
-                .error(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_baseline_account_circle_24)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .priority(Priority.HIGH)
 

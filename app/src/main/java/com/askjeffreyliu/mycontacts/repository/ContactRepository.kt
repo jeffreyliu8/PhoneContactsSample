@@ -1,11 +1,8 @@
 package com.askjeffreyliu.mycontacts.repository
 
 import android.content.Context
-import android.database.Cursor
 import android.provider.ContactsContract
-import android.provider.ContactsContract.CommonDataKinds.Email
 import com.askjeffreyliu.mycontacts.model.MyContact
-import com.orhanobut.logger.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -15,10 +12,18 @@ class ContactRepository(private val context: Context) {
     private val contacts = mutableListOf<MyContact>()
 
     suspend fun fetchContacts(): List<MyContact> = withContext(Dispatchers.IO) {
+        val projection = arrayOf(
+            ContactsContract.Contacts._ID,
+            ContactsContract.Contacts.DISPLAY_NAME,
+            ContactsContract.Contacts.STARRED,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.PHOTO_URI
+        )
+
         val cursor = context.contentResolver.query(
             ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-            null, null, null,
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
+            projection, null, null,
+            ContactsContract.Contacts.STARRED + " DESC"
         )
         cursor?.let {
             if ((it.count) > 0) {
@@ -48,7 +53,10 @@ class ContactRepository(private val context: Context) {
 
                     val photoUri =
                         it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI))
-                    Logger.d("contact", "getAllContacts: $name $phoneNo $photoUri")
+
+                    val isStar =
+                        it.getInt(it.getColumnIndex(ContactsContract.Contacts.STARRED)) == 1
+
 
                     contacts.add(
                         MyContact(
@@ -56,7 +64,8 @@ class ContactRepository(private val context: Context) {
                             name = name,
                             phone = phoneNo,
 //                            email = email,
-                            photo = photoUri
+                            photo = photoUri,
+                            star = isStar
                         )
                     )
                 }
