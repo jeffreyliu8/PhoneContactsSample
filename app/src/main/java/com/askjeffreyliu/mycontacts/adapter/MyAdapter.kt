@@ -6,6 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.askjeffreyliu.mycontacts.R
 import com.askjeffreyliu.mycontacts.model.MyContact
+import com.bumptech.glide.Glide
+import com.bumptech.glide.Priority
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.my_list_layout.view.*
 
 class MyAdapter(private val listener: (MyContact) -> Unit) :
@@ -33,8 +37,21 @@ class MyAdapter(private val listener: (MyContact) -> Unit) :
 
     inner class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bind(item: MyContact, listener: (MyContact) -> Unit) = with(itemView) {
-            nameTextView.text = item.id
-            descriptionTextView.text = item.name
+            nameTextView.text = item.name
+            phoneTextView.text = item.phone
+//            emailTextView.text = item.email
+
+            val options = RequestOptions()
+                .centerCrop()
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_foreground)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .priority(Priority.HIGH)
+
+            Glide.with(context)
+                .load(item.photo)
+                .apply(options)
+                .into(avatarImageView)
 
             setOnClickListener {
                 listener(item)
