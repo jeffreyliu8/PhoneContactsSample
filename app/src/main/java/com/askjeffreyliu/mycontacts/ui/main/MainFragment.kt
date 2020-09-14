@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.askjeffreyliu.mycontacts.R
 import com.askjeffreyliu.mycontacts.adapter.MyAdapter
-import com.askjeffreyliu.mycontacts.model.MyContact
 import com.orhanobut.logger.Logger
 import kotlinx.android.synthetic.main.main_fragment.*
 
@@ -53,7 +52,9 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
+        viewModel.contactsLiveData.observe(viewLifecycleOwner, {
+            mAdapter.updateList(it)
+        })
     }
 
     private fun initUIListeners() {
@@ -82,11 +83,13 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun populateListData() {
-        val testList = mutableListOf<MyContact>()
-        testList.add(MyContact("asdf", "asdfsadf"))
-        testList.add(MyContact("asdfas", "asdfdfsadf"))
-        mAdapter.updateList(testList)
+    private fun hasPermissionAndShowList(hasPermission: Boolean) {
+        if (hasPermission) {
+            permissionButton.visibility = View.GONE
+            viewModel.fetchContacts()
+        } else {
+            permissionButton.visibility = View.VISIBLE
+        }
     }
 
     override fun onStart() {
@@ -105,10 +108,9 @@ class MainFragment : Fragment() {
                     showSystemPermissionRequestWindow()
                 }
                 .show()
-            permissionButton.visibility = View.VISIBLE
+            hasPermissionAndShowList(false)
         } else { // we already have permission
-            permissionButton.visibility = View.GONE
-            populateListData()
+            hasPermissionAndShowList(true)
         }
     }
 
@@ -152,11 +154,10 @@ class MainFragment : Fragment() {
                     // contacts-related task you need to do.
 
                     // add your logic here
-                    permissionButton.visibility = View.GONE
-                    populateListData()
+                    hasPermissionAndShowList(true)
                 } else {
                     Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_LONG).show()
-                    permissionButton.visibility = View.VISIBLE
+                    hasPermissionAndShowList(false)
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
