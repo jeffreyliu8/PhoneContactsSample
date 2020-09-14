@@ -6,6 +6,8 @@ import com.askjeffreyliu.mycontacts.model.MyContact
 import com.orhanobut.logger.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class ContactRepository(private val context: Context) {
@@ -17,7 +19,7 @@ class ContactRepository(private val context: Context) {
             ContactsContract.Contacts.LOOKUP_KEY,
             ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
             ContactsContract.Contacts.STARRED,
-
+            ContactsContract.Contacts.CONTACT_LAST_UPDATED_TIMESTAMP,
             ContactsContract.Contacts.PHOTO_URI,
 //            ContactsContract.CommonDataKinds.Phone.NUMBER,
 //            ContactsContract.CommonDataKinds.Phone.PHOTO_URI
@@ -76,6 +78,9 @@ class ContactRepository(private val context: Context) {
                     val isStar =
                         it.getInt(it.getColumnIndex(ContactsContract.Contacts.STARRED)) == 1
 
+                    val time =
+                        it.getLong(it.getColumnIndex(ContactsContract.Contacts.CONTACT_LAST_UPDATED_TIMESTAMP))
+
                     contacts.add(
                         MyContact(
                             id = id,
@@ -83,7 +88,8 @@ class ContactRepository(private val context: Context) {
 //                            phone = phone,
 //                            email = email,
                             photo = photoUri,
-                            star = isStar
+                            star = isStar,
+                            lastModifiedAt = SimpleDateFormat("MM/dd/yyyy").format(Date(time))
                         )
                     )
                 }

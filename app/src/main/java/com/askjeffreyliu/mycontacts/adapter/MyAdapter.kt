@@ -44,7 +44,7 @@ class MyAdapter(private val listener: (MyContact) -> Unit) :
             } else {
                 starView.visibility = View.GONE
             }
-//            emailTextView.text = item.email
+            timeTextView.text = item.lastModifiedAt
 
             val options = RequestOptions()
                 .centerCrop()

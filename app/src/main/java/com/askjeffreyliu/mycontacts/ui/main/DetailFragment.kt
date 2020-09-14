@@ -1,6 +1,8 @@
 package com.askjeffreyliu.mycontacts.ui.main
 
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,37 +32,47 @@ class DetailFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        viewModel.emailsLiveData.observe(viewLifecycleOwner, {
-            if (it.isEmpty()) {
+        viewModel.emailsLiveData.observe(viewLifecycleOwner, { emailList ->
+            if (emailList.isEmpty()) {
                 emailButton.visibility = View.GONE
                 emailTextView.visibility = View.GONE
             } else {
-                emailTextView.text = it[0]
+                emailTextView.text = emailList[0]
                 emailButton.visibility = View.VISIBLE
                 emailTextView.visibility = View.VISIBLE
+                emailButton.setOnClickListener {
+                    val i = Intent(Intent.ACTION_SEND)
+                    i.putExtra(Intent.EXTRA_EMAIL, emailList[0])
+                    i.putExtra(Intent.EXTRA_SUBJECT, "Enter subject here")
+                    i.type = "message/rfc822"
+                    startActivity(Intent.createChooser(i, "Choose an Email client :"))
+                }
             }
         })
-        viewModel.phonesLiveData.observe(viewLifecycleOwner, {
-            if (it.isEmpty()) {
+        viewModel.phonesLiveData.observe(viewLifecycleOwner, { phoneList ->
+            if (phoneList.isEmpty()) {
                 callButton.visibility = View.GONE
                 phoneTextView.visibility = View.GONE
             } else {
-                phoneTextView.text = it[0]
+                phoneTextView.text = phoneList[0]
                 callButton.visibility = View.VISIBLE
                 phoneTextView.visibility = View.VISIBLE
+                callButton.setOnClickListener {
+                    val intent =
+                        Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneList[0], null))
+                    startActivity(intent)
+                }
             }
         })
 
         val item by navArgs<DetailFragmentArgs>()
 
         nameTextView.text = item.name
-//        phoneTextView.text = item.phone
         if (item.star) {
             starView.visibility = View.VISIBLE
         } else {
             starView.visibility = View.GONE
         }
-//            emailTextView.text = item.email
 
         val options = RequestOptions()
             .centerCrop()
