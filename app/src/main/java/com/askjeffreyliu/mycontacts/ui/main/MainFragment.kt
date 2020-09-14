@@ -30,9 +30,6 @@ class MainFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
 
-
-    private lateinit var viewAdapter: RecyclerView.Adapter<*>
-    private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var mAdapter: MyAdapter
 
     override fun onCreateView(
@@ -72,18 +69,18 @@ class MainFragment : Fragment() {
     }
 
     private fun initList() {
-        viewManager = LinearLayoutManager(requireContext())
+        val viewManager = LinearLayoutManager(requireContext())
         mAdapter = MyAdapter {
             val directions = MainFragmentDirections.navigateSeeDetail(
                 it.id,
                 it.name,
-//                it.phone,
                 it.photo,
                 it.star
             )
             findNavController().navigate(directions)
         }
-        viewAdapter = mAdapter
+        mAdapter.stateRestorationPolicy =
+            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
         contactRecyclerView.apply {
             // use this setting to improve performance if you know that changes
@@ -94,7 +91,7 @@ class MainFragment : Fragment() {
             layoutManager = viewManager
 
             // specify an viewAdapter (see also next example)
-            adapter = viewAdapter
+            adapter = mAdapter
         }
     }
 
