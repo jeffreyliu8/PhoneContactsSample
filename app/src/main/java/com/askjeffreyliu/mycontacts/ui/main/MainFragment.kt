@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.askjeffreyliu.mycontacts.R
 import com.askjeffreyliu.mycontacts.adapter.MyAdapter
+import com.askjeffreyliu.mycontacts.model.ResourceState
 import kotlinx.android.synthetic.main.main_fragment.*
 
 class MainFragment : Fragment() {
@@ -51,8 +52,16 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        viewModel.contactsLiveData.observe(viewLifecycleOwner, {
-            mAdapter.updateList(it)
+        viewModel.contactsLiveData.observe(viewLifecycleOwner, { resource ->
+            when (resource.state) {
+                ResourceState.LOADING -> {
+                    progressCircular.visibility = View.VISIBLE
+                }
+                ResourceState.SUCCESS -> {
+                    progressCircular.visibility = View.GONE
+                    mAdapter.updateList(resource.data)
+                }
+            }
         })
     }
 

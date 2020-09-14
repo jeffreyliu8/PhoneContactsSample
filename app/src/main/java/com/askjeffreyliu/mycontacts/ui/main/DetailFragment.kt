@@ -1,16 +1,19 @@
 package com.askjeffreyliu.mycontacts.ui.main
 
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import com.askjeffreyliu.mycontacts.R
+import com.askjeffreyliu.mycontacts.model.ResourceState
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -32,35 +35,54 @@ class DetailFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        viewModel.emailsLiveData.observe(viewLifecycleOwner, { emailList ->
-            if (emailList.isEmpty()) {
-                emailButton.visibility = View.GONE
-                emailTextView.visibility = View.GONE
-            } else {
-                emailTextView.text = emailList[0]
-                emailButton.visibility = View.VISIBLE
-                emailTextView.visibility = View.VISIBLE
-                emailButton.setOnClickListener {
-                    val i = Intent(Intent.ACTION_SEND)
-                    i.putExtra(Intent.EXTRA_EMAIL, emailList[0])
-                    i.putExtra(Intent.EXTRA_SUBJECT, "Enter subject here")
-                    i.type = "message/rfc822"
-                    startActivity(Intent.createChooser(i, "Choose an Email client :"))
+        viewModel.emailsLiveData.observe(viewLifecycleOwner, { resource ->
+            when (resource.state) {
+                ResourceState.LOADING -> {
+                    emailButton.visibility = View.INVISIBLE
+                    emailTextView.visibility = View.INVISIBLE
+                    emailProgress.visibility = View.VISIBLE
+                }
+                ResourceState.SUCCESS -> {
+                    emailProgress.visibility = View.INVISIBLE
+                    if (resource.data.isNullOrEmpty()) {
+                        emailButton.visibility = View.INVISIBLE
+                        emailTextView.visibility = View.INVISIBLE
+                    } else {
+                        emailTextView.text = resource.data[0]
+                        emailButton.visibility = View.VISIBLE
+                        emailTextView.visibility = View.VISIBLE
+                        emailButton.setOnClickListener {
+                            sendEmail(resource.data[0])
+                        }
+                    }
                 }
             }
         })
-        viewModel.phonesLiveData.observe(viewLifecycleOwner, { phoneList ->
-            if (phoneList.isEmpty()) {
-                callButton.visibility = View.GONE
-                phoneTextView.visibility = View.GONE
-            } else {
-                phoneTextView.text = phoneList[0]
-                callButton.visibility = View.VISIBLE
-                phoneTextView.visibility = View.VISIBLE
-                callButton.setOnClickListener {
-                    val intent =
-                        Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneList[0], null))
-                    startActivity(intent)
+        viewModel.phonesLiveData.observe(viewLifecycleOwner, { resource ->
+            when (resource.state) {
+                ResourceState.LOADING -> {
+                    callButton.visibility = View.INVISIBLE
+                    phoneTextView.visibility = View.INVISIBLE
+                    phoneProgress.visibility = View.VISIBLE
+                }
+                ResourceState.SUCCESS -> {
+                    phoneProgress.visibility = View.INVISIBLE
+                    if (resource.data.isNullOrEmpty()) {
+                        callButton.visibility = View.INVISIBLE
+                        phoneTextView.visibility = View.INVISIBLE
+                    } else {
+                        phoneTextView.text = resource.data[0]
+                        callButton.visibility = View.VISIBLE
+                        phoneTextView.visibility = View.VISIBLE
+                        callButton.setOnClickListener {
+                            val intent =
+                                Intent(
+                                    Intent.ACTION_DIAL,
+                                    Uri.fromParts("tel", resource.data[0], null)
+                                )
+                            startActivity(intent)
+                        }
+                    }
                 }
             }
         })
@@ -87,5 +109,22 @@ class DetailFragment : Fragment() {
 
         viewModel.fetchEmails(item.contactId)
         viewModel.fetchPhones(item.contactId)
+    }
+
+    private fun sendEmail(email: String) {
+        val emailIntent = Intent(Intent.ACTION_SEND)
+        emailIntent.data = Uri.parse("mailto:")
+        emailIntent.type = "message/rfc822"
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+
+        try {
+            startActivity(Intent.createChooser(emailIntent, "Send mail..."))
+        } catch (ex: ActivityNotFoundException) {
+            Toast.makeText(
+                requireContext(),
+                "There is no email client installed.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }
